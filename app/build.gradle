@@ -28,5 +28,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar'])
+    implementation 'org.kohsuke:github-api:1.301'
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
 }
