@@ -10,14 +10,13 @@ import a.a.a.nA;
 
 public class LayoutBean extends nA implements Parcelable {
     public static final Parcelable.Creator<LayoutBean> CREATOR = new Parcelable.Creator<LayoutBean>() {
-        /* class com.besome.sketch.beans.LayoutBean.AnonymousClass1 */
 
-        @Override // android.os.Parcelable.Creator
+        @Override
         public LayoutBean createFromParcel(Parcel parcel) {
             return new LayoutBean(parcel);
         }
 
-        @Override // android.os.Parcelable.Creator
+        @Override
         public LayoutBean[] newArray(int i) {
             return new LayoutBean[i];
         }
@@ -82,7 +81,7 @@ public class LayoutBean extends nA implements Parcelable {
         this.layoutGravity = 0;
         this.orientation = -1;
         this.backgroundColor = FlexItem.MAX_SIZE;
-        this.borderColor = -16740915;
+        this.borderColor = 0xff008dcd;
     }
 
     public LayoutBean(Parcel parcel) {

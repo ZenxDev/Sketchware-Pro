@@ -602,7 +602,7 @@ public class Lx {
         if (typeName.equals("include") || typeName.equals("#")) {
             fieldDeclaration = "";
         } else {
-            String initializer = a(typeName, typeInstanceName, parameters);
+            String initializer = getInitializer(typeName, typeInstanceName, parameters);
             String builtInType = mq.e(typeName);
             if (initializer.length() <= 0) {
                 if (!builtInType.equals("") && !builtInType.equals("FirebaseCloudMessage")) {
@@ -683,14 +683,14 @@ public class Lx {
     /**
      * @return Code of a More Block
      */
-    public static String a(String var0, String var1, String moreBlockLogic) {
-        String code = "public " + ReturnMoreblockManager.getMbTypeCode(var0) + " _" +
-                ReturnMoreblockManager.getMbName(var0) + "(";
-        ArrayList<String> var10 = FB.c(var1);
+    public static String getMoreBlockCode(String moreBlockName, String moreBlockSpec, String moreBlockLogic) {
+        String code = "public " + ReturnMoreblockManager.getMbTypeCode(moreBlockName) + " _" +
+                ReturnMoreblockManager.getMbName(moreBlockName) + "(";
+        ArrayList<String> parameterSpecs = FB.c(moreBlockSpec);
         boolean isFirstParameter = true;
 
         processingParameters:
-        for (String parameterSpec : var10) {
+        for (String parameterSpec : parameterSpecs) {
             // Avoid label spec parts
             if (parameterSpec.charAt(0) == '%') {
                 char parameterType = parameterSpec.charAt(1);
@@ -813,7 +813,7 @@ public class Lx {
      * Example initializer for an Intent component: <code>new Intent()</code>
      * Example initializer for a boolean variable: <code>false</code>
      */
-    public static String a(String name, String componentName, String... parameters) {
+    public static String getInitializer(String name, String componentName, String... parameters) {
         switch (name) {
             case "boolean":
                 return "false";
@@ -866,9 +866,9 @@ public class Lx {
         }
     }
 
-    public static void a(StringBuilder var0, int var1) {
-        for (int var2 = 0; var2 < var1; ++var2) {
-            var0.append('\t');
+    public static void a(StringBuilder stringBuilder, int indentSize) {
+        for (int i = 0; i < indentSize; ++i) {
+            stringBuilder.append('\t');
         }
     }
 
@@ -1056,7 +1056,7 @@ public class Lx {
     /**
      * @return Initializer of a View to be added to _initialize(Bundle)
      */
-    public static String b(String type, String name, boolean isInFragment) {
+    public static String getViewInitializer(String type, String name, boolean isInFragment) {
         String initializer = "";
 
         if (!type.equals("include") && !type.equals("#")) {
@@ -1154,7 +1154,7 @@ public class Lx {
 
             case "RewardedVideoAd":
                 return componentName + " = MobileAds.getRewardedVideoAdInstance(this);";
-                
+
             case "FragmentStatePagerAdapter":
                 return componentName + " = new " + a(componentName + "Fragment") + "(getApplicationContext(), getSupportFragmentManager());";
 
@@ -1556,7 +1556,7 @@ public class Lx {
     /**
      * @return A single line to initialize a drawer view.
      */
-    public static String c(String type, String viewName, String viewContainerName) {
+    public static String getDrawerViewInitializer(String type, String viewName, String viewContainerName) {
         String initializer = "";
         if (!type.equals("include") && !type.equals("#")) {
             initializer = "_drawer_" + viewName + " = " + viewContainerName + ".findViewById(R.id." + viewName + ");";

@@ -14,14 +14,13 @@ public class TutorialStepBean extends nA implements Parcelable {
     public static final int ACTION_MANUAL_WAIT = 3;
     public static final int ACTION_TOUCH_NEXT = 0;
     public static final Parcelable.Creator<TutorialStepBean> CREATOR = new Parcelable.Creator<TutorialStepBean>() {
-        /* class com.besome.sketch.beans.TutorialStepBean.AnonymousClass1 */
 
-        @Override // android.os.Parcelable.Creator
+        @Override
         public TutorialStepBean createFromParcel(Parcel parcel) {
             return new TutorialStepBean(parcel);
         }
 
-        @Override // android.os.Parcelable.Creator
+        @Override
         public TutorialStepBean[] newArray(int i) {
             return new TutorialStepBean[i];
         }
@@ -123,21 +122,21 @@ public class TutorialStepBean extends nA implements Parcelable {
         this.permittedAction = 0;
         this.permittedOption = 1;
         this.permittedValue = new Object[3];
-        this.overlayColor = -1728053248;
+        this.overlayColor = 0x99000000;
         this.overlayPadding = 0;
-        this.pointerColor = -2131475658;
+        this.pointerColor = 0x80f44336;
         this.pointerGravity = 17;
         this.pointerOffsetX = 0;
         this.pointerOffsetY = 0;
-        this.tooltipColor = -3722;
-        this.tooltipTextColor = -14606047;
+        this.tooltipColor = 0xfffff176;
+        this.tooltipTextColor = 0xff212121;
         this.tooltipGravity = 51;
         this.title = "";
         this.titleSize = 30;
         this.desc = "";
         this.descSize = 16;
         this.failedMessage = "";
-        this.failedTooltipTextColor = -65536;
+        this.failedTooltipTextColor = 0xffff0000;
         this.delayAfter = 0;
     }
 

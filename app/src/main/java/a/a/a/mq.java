@@ -444,7 +444,7 @@ public class mq {
     /**
      * @return Imports needed for a type
      */
-    public static ArrayList<String> c(String name) {
+    public static ArrayList<String> getImportsByTypeName(String name) {
         ArrayList<String> importList = new ArrayList<>();
 
         switch (name) {
@@ -824,9 +824,6 @@ public class mq {
             case "FirebaseDB":
                 return "DatabaseReference";
 
-            case "InterstitialAd":
-                return "InterstitialAd";
-
             case "FirebaseStorage":
                 return "StorageReference";
 
@@ -837,24 +834,9 @@ public class mq {
             case "SpeechToText":
                 return "SpeechRecognizer";
 
-            case "RewardedVideoAd":
-                return "RewardedVideoAd";
-
-            case "ProgressDialog":
-                return "ProgressDialog";
-
-            case "DatePickerDialog":
-                return "DatePickerDialog";
-
-            case "TimePickerDialog":
-                return "TimePickerDialog";
-
-            case "Notification":
-                return "Notification";
-
             case "FragmentAdapter":
                 return "FragmentStatePagerAdapter";
-                
+
             case "Context":
                 return "Activity";
 

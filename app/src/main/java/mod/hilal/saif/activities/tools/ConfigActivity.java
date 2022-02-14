@@ -19,8 +19,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.annotations.NonNull;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.sketchware.remod.Resources;
 
 import java.io.File;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import mod.SketchwareUtil;
 import mod.agus.jcoderz.lib.FileUtil;
 import mod.hey.studios.util.Helper;
+import mod.jbk.util.LogUtil;
 
 public class ConfigActivity extends Activity {
 
@@ -41,13 +44,16 @@ public class ConfigActivity extends Activity {
     public static final String SETTING_USE_NEW_VERSION_CONTROL = "use-new-version-control";
     public static final String SETTING_USE_ASD_HIGHLIGHTER = "use-asd-highlighter";
     public static final String SETTING_SKIP_MAJOR_CHANGES_REMINDER = "skip-major-changes-reminder";
+    public static final String SETTING_BLOCKMANAGER_DIRECTORY_PALETTE_FILE_PATH = "palletteDir";
+    public static final String SETTING_BLOCKMANAGER_DIRECTORY_BLOCK_FILE_PATH = "blockDir";
+
     private static final int DEFAULT_BACKGROUND_COLOR = Color.parseColor("#fafafa");
     private LinearLayout root;
     private HashMap<String, Object> setting_map = new HashMap<>();
 
     public static String getBackupPath() {
         if (FileUtil.isExistFile(SETTINGS_FILE.getAbsolutePath())) {
-            HashMap<String, Object> settings = new Gson().fromJson(FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()), Helper.TYPE_MAP);
+            HashMap<String, Object> settings = readSettings();
             if (settings.containsKey(SETTING_BACKUP_DIRECTORY)) {
                 Object value = settings.get(SETTING_BACKUP_DIRECTORY);
                 if (value instanceof String) {
@@ -64,15 +70,27 @@ public class ConfigActivity extends Activity {
         return "/.sketchware/backups/";
     }
 
+    public static String getStringSettingValueOrSetAndGet(String settingKey, String toReturnAndSetIfNotFound) {
+        HashMap<String, Object> settings = readSettings();
+
+        Object value = settings.get(settingKey);
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            settings.put(settingKey, toReturnAndSetIfNotFound);
+            FileUtil.writeFile(SETTINGS_FILE.getAbsolutePath(), new Gson().toJson(settings));
+
+            return toReturnAndSetIfNotFound;
+        }
+    }
+
     public static boolean isLegacyCeEnabled() {
         /* The legacy Code Editor is specifically opt-in */
         if (!FileUtil.isExistFile(SETTINGS_FILE.getAbsolutePath())) {
             return false;
         }
 
-        HashMap<String, Object> settings = new Gson().fromJson(
-                FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()),
-                Helper.TYPE_MAP);
+        HashMap<String, Object> settings = readSettings();
         if (settings.containsKey(SETTING_LEGACY_CODE_EDITOR)) {
             Object value = settings.get(SETTING_LEGACY_CODE_EDITOR);
             if (value instanceof Boolean) {
@@ -93,10 +111,8 @@ public class ConfigActivity extends Activity {
             return false;
         }
 
-        HashMap<String, Object> settings = new Gson().fromJson(
-                FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()),
-                Helper.TYPE_MAP);
-        if (settings != null && settings.containsKey(keyName)) {
+        HashMap<String, Object> settings = readSettings();
+        if (settings.containsKey(keyName)) {
             Object value = settings.get(keyName);
             if (value instanceof Boolean) {
                 return (Boolean) value;
@@ -111,16 +127,52 @@ public class ConfigActivity extends Activity {
     }
 
     public static void setSetting(String key, Object value) {
+        HashMap<String, Object> settings = readSettings();
+        settings.put(key, value);
+        FileUtil.writeFile(SETTINGS_FILE.getAbsolutePath(), new Gson().toJson(settings));
+    }
+
+    @NonNull
+    private static HashMap<String, Object> readSettings() {
         HashMap<String, Object> settings;
 
-        if (!SETTINGS_FILE.exists()) {
-            settings = new HashMap<>();
-            restoreDefaultSettings(settings);
-        } else {
-            settings = new Gson().fromJson(FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()), Helper.TYPE_MAP);
-        }
+        if (SETTINGS_FILE.exists()) {
+            Exception toLog;
 
-        settings.put(key, value);
+            try {
+                settings = new Gson().fromJson(FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()), Helper.TYPE_MAP);
+
+                if (settings != null) {
+                    return settings;
+                }
+
+                toLog = new NullPointerException("settings == null");
+                // fall-through to shared error handler
+            } catch (JsonParseException e) {
+                toLog = e;
+                // fall-through to shared error handler
+            }
+
+            SketchwareUtil.toastError("Couldn't parse Mod Settings! Restoring defaults.");
+            LogUtil.e("ConfigActivity", "Failed to parse Mod Settings.", toLog);
+        }
+        settings = new HashMap<>();
+        restoreDefaultSettings(settings);
+
+        return settings;
+    }
+
+    private static void restoreDefaultSettings(HashMap<String, Object> settings) {
+        settings.clear();
+        settings.put(SETTING_ALWAYS_SHOW_BLOCKS, false);
+        settings.put(SETTING_BACKUP_DIRECTORY, "/.sketchware/backups/");
+        settings.put(SETTING_LEGACY_CODE_EDITOR, false);
+        settings.put(SETTING_SHOW_BUILT_IN_BLOCKS, false);
+        settings.put(SETTING_SHOW_EVERY_SINGLE_BLOCK, false);
+        settings.put(SETTING_USE_NEW_VERSION_CONTROL, false);
+        settings.put(SETTING_USE_ASD_HIGHLIGHTER, false);
+        settings.put(SETTING_BLOCKMANAGER_DIRECTORY_PALETTE_FILE_PATH, "/.sketchware/resources/block/My Block/palette.json");
+        settings.put(SETTING_BLOCKMANAGER_DIRECTORY_BLOCK_FILE_PATH, "/.sketchware/resources/block/My Block/block.json");
         FileUtil.writeFile(SETTINGS_FILE.getAbsolutePath(), new Gson().toJson(settings));
     }
 
@@ -128,7 +180,7 @@ public class ConfigActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (FileUtil.isExistFile(SETTINGS_FILE.getAbsolutePath())) {
-            setting_map = new Gson().fromJson(FileUtil.readFile(SETTINGS_FILE.getAbsolutePath()), Helper.TYPE_MAP);
+            setting_map = readSettings();
             if (!setting_map.containsKey(SETTING_SHOW_BUILT_IN_BLOCKS) || !setting_map.containsKey(SETTING_ALWAYS_SHOW_BLOCKS)) {
                 restoreDefaultSettings();
             }
@@ -414,17 +466,5 @@ public class ConfigActivity extends Activity {
 
     private void restoreDefaultSettings() {
         restoreDefaultSettings(setting_map);
-    }
-
-    private static void restoreDefaultSettings(HashMap<String, Object> settings) {
-        settings.clear();
-        settings.put(SETTING_ALWAYS_SHOW_BLOCKS, false);
-        settings.put(SETTING_BACKUP_DIRECTORY, "");
-        settings.put(SETTING_LEGACY_CODE_EDITOR, false);
-        settings.put(SETTING_SHOW_BUILT_IN_BLOCKS, false);
-        settings.put(SETTING_SHOW_EVERY_SINGLE_BLOCK, false);
-        settings.put(SETTING_USE_NEW_VERSION_CONTROL, false);
-        settings.put(SETTING_USE_ASD_HIGHLIGHTER, false);
-        FileUtil.writeFile(SETTINGS_FILE.getAbsolutePath(), new Gson().toJson(settings));
     }
 }
